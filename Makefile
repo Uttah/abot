@@ -7,7 +7,7 @@ build:
 	docker build -t $(IMAGE_NAME) .
 
 run: build
-	docker run --rm -it --name $(CONTAINER_NAME) \
+	docker run --rm -itd --name $(CONTAINER_NAME) \
 		-v $(PWD)/:/app \
 		$(IMAGE_NAME)
 
