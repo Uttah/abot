@@ -6,7 +6,7 @@ from aiogram.types import BotCommand
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from .config import BOT_TOKEN
-from .database import init_db
+from .database import init_db, migrate_db
 
 from .handlers.start import register_handlers as register_start
 from .handlers.stop import register_handlers as register_stop
@@ -20,6 +20,7 @@ async def main():
     logging.basicConfig(level=logging.INFO)
 
     await init_db()
+    await migrate_db()
 
     bot = Bot(token=BOT_TOKEN)
     storage = MemoryStorage()

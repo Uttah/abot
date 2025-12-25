@@ -27,9 +27,25 @@ async def init_db():
                   REFERENCES links(id) ON DELETE CASCADE,
                 sender_user_id    INTEGER
                   REFERENCES users(id),
-                text              TEXT NOT NULL,
+                text              TEXT,
+                media_type        TEXT,
+                media_file_id     TEXT,
                 created_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
                 reply_to_id       INTEGER
             );
         """)
+        await db.commit()
+
+
+async def migrate_db():
+    """Миграция существующей БД: добавление колонок для медиа."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("PRAGMA table_info(messages);")
+        columns = {row[1] for row in await cur.fetchall()}
+        
+        if "media_type" not in columns:
+            await db.execute("ALTER TABLE messages ADD COLUMN media_type TEXT;")
+        if "media_file_id" not in columns:
+            await db.execute("ALTER TABLE messages ADD COLUMN media_file_id TEXT;")
+        
         await db.commit()
