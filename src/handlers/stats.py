@@ -1,8 +1,8 @@
 import logging
 import aiosqlite
 
-from aiogram import F
 from aiogram.types import Message
+from aiogram.filters.command import Command
 
 from ..database import DB_PATH
 from ..config import ADMIN_IDS
@@ -68,4 +68,4 @@ async def cmd_stats(msg: Message):
 
 
 def register_handlers(dp):
-    dp.message.register(cmd_stats, F.text == "/stats")
+    dp.message.register(cmd_stats, Command(commands=["stats"]))
