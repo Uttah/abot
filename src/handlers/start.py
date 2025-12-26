@@ -11,6 +11,10 @@ from ..states import Form
 
 async def cmd_start(msg: Message, state: FSMContext, bot: Bot):
     await state.clear()
+    
+    if not msg.text or not msg.from_user:
+        return
+    
     parts = msg.text.split(maxsplit=1)
 
     # check the code
@@ -42,7 +46,11 @@ async def cmd_start(msg: Message, state: FSMContext, bot: Bot):
             "SELECT id FROM users WHERE tg_user_id = ?",
             (tg,)
         )
-        user_id = (await cur.fetchone())[0]
+        user_row = await cur.fetchone()
+        if not user_row:
+            await msg.answer("⚠️ Ошибка при создании пользователя. Попробуйте ещё раз.")
+            return
+        user_id = user_row[0]
 
         # create code and insert into links
         code = secrets.token_urlsafe(8)

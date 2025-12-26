@@ -1,5 +1,5 @@
 from aiogram import Bot
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 
 from ..callbacks import ReplyCallback
 from aiogram.fsm.context import FSMContext
@@ -13,7 +13,10 @@ async def on_reply_click(
     await state.clear()
     await state.update_data(reply_message_id=callback_data.message_id)
     await state.set_state("Form:waiting_for_reply")
-    await cb.message.answer("✏️ Введите ваш анонимный ответ:")
+    
+    if cb.message and isinstance(cb.message, Message):
+        await cb.message.answer("✏️ Введите ваш анонимный ответ:")
+    
     await cb.answer()
 
 

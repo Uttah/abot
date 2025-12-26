@@ -14,6 +14,7 @@ from .handlers.anon_message import register_handlers as register_anon
 from .handlers.reply_click import register_handlers as register_reply_click
 from .handlers.owner_reply import register_handlers as register_owner_reply
 from .handlers.debug import register_handlers as register_debug
+from .handlers.errors import router as errors_router
 
 
 async def main():
@@ -39,6 +40,9 @@ async def main():
     register_reply_click(dp)
     register_owner_reply(dp)
     register_debug(dp)
+    
+    # Регистрируем обработчик ошибок
+    dp.include_router(errors_router)
 
     await dp.start_polling(bot, skip_updates=True)
 

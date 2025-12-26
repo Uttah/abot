@@ -12,7 +12,16 @@ from ..media import extract_media, send_media
 
 async def anon_message(msg: Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
-    link_id = data["link_id"]
+    link_id = data.get("link_id")
+    
+    if not link_id:
+        await state.clear()
+        await msg.answer("⚠️ Сессия истекла. Пожалуйста, начните заново с /start")
+        return
+    
+    if not msg.from_user:
+        return
+    
     tg_sender = msg.from_user.id
 
     media_type, file_id, text = extract_media(msg)
@@ -31,7 +40,12 @@ async def anon_message(msg: Message, state: FSMContext, bot: Bot):
             "SELECT id FROM users WHERE tg_user_id = ?",
             (tg_sender,)
         )
-        sender_user_id = (await cur.fetchone())[0]
+        row = await cur.fetchone()
+        if not row:
+            await msg.answer("⚠️ Ошибка при создании пользователя. Попробуйте /start")
+            return
+        sender_user_id = row[0]
+        
         cur = await db.execute(
             "INSERT INTO messages(link_id, sender_user_id, text, media_type, media_file_id) "
             "VALUES (?, ?, ?, ?, ?)",
@@ -39,12 +53,17 @@ async def anon_message(msg: Message, state: FSMContext, bot: Bot):
         )
         await db.commit()
         message_id = cur.lastrowid
+        
         cur = await db.execute(
             "SELECT u.tg_user_id FROM users u "
             "JOIN links l ON l.owner_id = u.id WHERE l.id = ?",
             (link_id,)
         )
-        owner_tg = (await cur.fetchone())[0]
+        owner_row = await cur.fetchone()
+        if not owner_row:
+            await msg.answer("⚠️ Ссылка недействительна. Попросите владельца создать новую.")
+            return
+        owner_tg = owner_row[0]
 
     kb = make_reply_keyboard(message_id)
     await send_media(
