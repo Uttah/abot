@@ -15,6 +15,7 @@ from .handlers.anon_message import register_handlers as register_anon
 from .handlers.reply_click import register_handlers as register_reply_click
 from .handlers.owner_reply import register_handlers as register_owner_reply
 from .handlers.block import register_handlers as register_block
+from .handlers.stats import register_handlers as register_stats
 from .handlers.debug import register_handlers as register_debug
 from .handlers.errors import router as errors_router
 from .middlewares.throttling import ThrottlingMiddleware
@@ -44,6 +45,7 @@ async def main():
 
     register_start(dp)
     register_stop(dp)
+    register_stats(dp)
     register_anon(dp)
     register_reply_click(dp)
     register_owner_reply(dp)
