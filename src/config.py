@@ -13,3 +13,7 @@ DB_PATH = os.getenv("DB_PATH", "/app/db/anonbot.db")
 # Rate limiting
 RATE_LIMIT_MESSAGES = int(os.getenv("RATE_LIMIT_MESSAGES", "5"))
 RATE_LIMIT_PERIOD = int(os.getenv("RATE_LIMIT_PERIOD", "60"))  # seconds
+
+# Admin IDs (can create links)
+_admin_ids = os.getenv("ADMIN_IDS", "")
+ADMIN_IDS: set[int] = {int(x.strip()) for x in _admin_ids.split(",") if x.strip()}

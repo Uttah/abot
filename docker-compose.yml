@@ -27,6 +27,7 @@ services:
       - DB_PATH=/app/db/anonbot.db
       - RATE_LIMIT_MESSAGES=${RATE_LIMIT_MESSAGES:-5}
       - RATE_LIMIT_PERIOD=${RATE_LIMIT_PERIOD:-60}
+      - ADMIN_IDS=${ADMIN_IDS:-}
     volumes:
       - ./db:/app/db
 

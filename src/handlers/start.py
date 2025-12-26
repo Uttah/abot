@@ -7,6 +7,7 @@ from aiogram.fsm.context import FSMContext
 
 from ..database import DB_PATH
 from ..states import Form
+from ..config import ADMIN_IDS
 
 
 async def cmd_start(msg: Message, state: FSMContext, bot: Bot):
@@ -33,8 +34,13 @@ async def cmd_start(msg: Message, state: FSMContext, bot: Bot):
         await state.set_state(Form.waiting_for_anon)
         return await msg.answer("✏️ Введите текст вашего анонимного сообщения:")
 
-    # else create a new link
+    # else create a new link (only for admins)
     tg = msg.from_user.id
+    
+    if tg not in ADMIN_IDS:
+        await msg.answer("👋 Этот бот предназначен для отправки анонимных сообщений.\n\nПерейдите по ссылке от владельца, чтобы отправить сообщение.")
+        return
+    
     async with aiosqlite.connect(DB_PATH) as db:
         # register user if not exists
         await db.execute(
