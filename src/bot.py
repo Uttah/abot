@@ -3,9 +3,10 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand
-from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.storage.redis import RedisStorage
+from redis.asyncio import Redis
 
-from .config import BOT_TOKEN
+from .config import BOT_TOKEN, REDIS_URL
 from .database import init_db, migrate_db
 
 from .handlers.start import register_handlers as register_start
@@ -15,6 +16,7 @@ from .handlers.reply_click import register_handlers as register_reply_click
 from .handlers.owner_reply import register_handlers as register_owner_reply
 from .handlers.debug import register_handlers as register_debug
 from .handlers.errors import router as errors_router
+from .middlewares.throttling import ThrottlingMiddleware
 
 
 async def main():
@@ -23,9 +25,14 @@ async def main():
     await init_db()
     await migrate_db()
 
+    redis = Redis.from_url(REDIS_URL)
+    storage = RedisStorage(redis=redis)
+    
     bot = Bot(token=BOT_TOKEN)
-    storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
+    
+    # Rate limiting middleware
+    dp.message.middleware(ThrottlingMiddleware())
 
     await bot.set_my_commands([
         BotCommand(command="start",
@@ -44,7 +51,10 @@ async def main():
     # Регистрируем обработчик ошибок
     dp.include_router(errors_router)
 
-    await dp.start_polling(bot, skip_updates=True)
+    try:
+        await dp.start_polling(bot, skip_updates=True)
+    finally:
+        await redis.close()
 
 if __name__ == "__main__":
     asyncio.run(main())

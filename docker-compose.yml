@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: anonbot_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  bot:
+    build: .
+    container_name: anonbot
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - REDIS_URL=redis://redis:6379/0
+      - DB_PATH=/app/db/anonbot.db
+      - RATE_LIMIT_MESSAGES=${RATE_LIMIT_MESSAGES:-5}
+      - RATE_LIMIT_PERIOD=${RATE_LIMIT_PERIOD:-60}
+    volumes:
+      - ./db:/app/db
+
+volumes:
+  redis_data:

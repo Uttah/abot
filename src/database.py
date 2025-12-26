@@ -1,6 +1,6 @@
 import aiosqlite
 
-DB_PATH = "/app/db/anonbot.db"
+from .config import DB_PATH
 
 
 async def init_db():
