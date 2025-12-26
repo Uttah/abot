@@ -1,3 +1,4 @@
+import logging
 import aiosqlite
 
 from aiogram import F
@@ -6,9 +7,17 @@ from aiogram.types import Message
 from ..database import DB_PATH
 from ..config import ADMIN_IDS
 
+logger = logging.getLogger(__name__)
+
 
 async def cmd_stats(msg: Message):
-    if not msg.from_user or msg.from_user.id not in ADMIN_IDS:
+    logger.info("Stats command from user %s", msg.from_user.id if msg.from_user else "unknown")
+    
+    if not msg.from_user:
+        return
+    
+    if msg.from_user.id not in ADMIN_IDS:
+        logger.info("User %s not in ADMIN_IDS %s", msg.from_user.id, ADMIN_IDS)
         return
     
     async with aiosqlite.connect(DB_PATH) as db:
