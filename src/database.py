@@ -34,6 +34,15 @@ async def init_db():
                 reply_to_id       INTEGER
             );
         """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS blocked_users (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                owner_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                blocked_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(owner_id, blocked_id)
+            );
+        """)
         await db.commit()
 
 

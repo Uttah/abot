@@ -46,6 +46,19 @@ async def anon_message(msg: Message, state: FSMContext, bot: Bot):
             return
         sender_user_id = row[0]
         
+        # Проверяем, не заблокирован ли отправитель
+        cur = await db.execute(
+            """
+            SELECT 1 FROM blocked_users b
+            JOIN links l ON l.owner_id = b.owner_id
+            WHERE l.id = ? AND b.blocked_id = ?
+            """,
+            (link_id, sender_user_id)
+        )
+        if await cur.fetchone():
+            await msg.answer("❌ Вы не можете отправлять сообщения этому пользователю.")
+            return
+        
         cur = await db.execute(
             "INSERT INTO messages(link_id, sender_user_id, text, media_type, media_file_id) "
             "VALUES (?, ?, ?, ?, ?)",
