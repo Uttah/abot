@@ -3,6 +3,7 @@ import aiosqlite
 from aiogram import Bot
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
+from aiogram.exceptions import TelegramForbiddenError
 
 from ..database import DB_PATH
 from ..states import Form
@@ -59,16 +60,22 @@ async def owner_reply(msg: Message, state: FSMContext, bot: Bot):
         )
         await db.commit()
 
-    await send_media(
-        bot=bot,
-        chat_id=orig_tg,
-        media_type=media_type,
-        file_id=file_id,
-        text=text,
-        prefix="✉️ Анонимный ответ:\n\n"
-    )
-    await state.clear()
-    await msg.answer("✅ Ваш ответ отправлен анонимно!")
+    try:
+        await send_media(
+            bot=bot,
+            chat_id=orig_tg,
+            media_type=media_type,
+            file_id=file_id,
+            text=text,
+            prefix="✉️ Анонимный ответ:\n\n"
+        )
+        await msg.answer("✅ Ваш ответ отправлен анонимно!")
+    except TelegramForbiddenError:
+        await msg.answer(
+            "⚠️ К сожалению, получатель заблокировал бота и не сможет получить ваш ответ."
+        )
+    finally:
+        await state.clear()
 
 
 def register_handlers(dp):
