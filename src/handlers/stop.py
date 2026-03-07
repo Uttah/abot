@@ -8,7 +8,7 @@ async def cmd_stop(msg: Message, state: FSMContext):
     await msg.answer(
         "✅ Сессия анонимных сообщений завершена.\n"
         "Чтобы задать новый вопрос, введите:\n"
-        "<code>/start <CODE></code>",
+        "<code>/start &lt;CODE&gt;</code>",
         parse_mode="HTML"
     )
 
